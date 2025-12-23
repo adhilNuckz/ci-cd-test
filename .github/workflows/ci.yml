@@ -1,17 +1,16 @@
-name: Node.js CI Pipeline
+name: CI/CD for Node App
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build:
+  ci-cd:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -24,3 +23,23 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Deploy to production server
+        if: success()
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            APP_DIR=/home/deploy/apps/ci-cd-test
+
+            if [ ! -d "$APP_DIR" ]; then
+              mkdir -p /home/deploy/apps
+              git clone https://github.com/adhilNuckz/ci-cd-test.git $APP_DIR
+            fi
+
+            cd $APP_DIR
+            git pull origin main
+            npm install
+            pm2 restart ci-cd-test || pm2 start index.js --name ci-cd-test
