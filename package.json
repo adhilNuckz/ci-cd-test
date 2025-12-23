@@ -7,8 +7,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start" : "node index.js",
-    "test": "echo \"No test yet "
+    "test": "echo \" no test yet\""
   },
   "dependencies": {
     "express": "^5.2.1"
